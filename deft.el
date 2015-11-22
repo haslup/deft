@@ -483,6 +483,22 @@ entire filter string is interpreted as a single regular expression."
   :type 'boolean
   :group 'deft)
 
+(defcustom deft-recursive-skip-dir-regexp nil
+  "Regular expression to allow skipping of directories when
+deft-recursive is set.  When nil, no directories are skipped.
+
+Examples
+
+Skip all directories named 'archive'
+   (setq deft-recursive-skip-dir-regexp \"/archive/\")
+
+Skip all directories ending with 'archive'
+   (setq deft-recursive-skip-dir-regexp \"archive/\")
+"
+  :type 'regexp
+  :safe 'stringp
+  :group 'deft)
+
 (defcustom deft-parse-title-function 'deft-strip-title
   "Function for post-processing file titles."
   :type 'function
@@ -818,7 +834,10 @@ See `deft-find-all-files'."
             (when (and deft-recursive
                        (not (string-match "/\\(\\.\\|\\.\\.\\)$" file))
                        (not (string-prefix-p archive-dir
-                                             (expand-file-name (concat file "/")))))
+                                             (expand-file-name (concat file "/"))))
+                       (and deft-recursive-skip-dir-regexp
+                             (not (string-match deft-recursive-skip-dir-regexp
+                                                (expand-file-name (concat file "/"))))))
               (setq result (append (deft-find-files file) result))))
            ;; Collect names of readable files ending in `deft-extension'
            ((and (file-readable-p file)
